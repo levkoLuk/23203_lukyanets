@@ -1,136 +1,97 @@
-#include <algorithm>
-#include <string>
+#include "flatmap.h"
+#include <iostream>
 #include <stdexcept>
-#include <vector>
 
-typedef std::string Key;
-struct Value {
-  unsigned age;
-  unsigned weight;
-};
+FlatMap::FlatMap() = default;
 
-class FlatMap {
-public:
-  // Default constructor
-  FlatMap() = default;
+FlatMap::~FlatMap() = default;
 
-  // Destructor
-  ~FlatMap() = default;
+FlatMap::FlatMap(const FlatMap& b) : data(b.data) {}
 
-  // Copy constructor
-  FlatMap(const FlatMap& b) = default;
+FlatMap::FlatMap(FlatMap&& b) noexcept : data(std::move(b.data)) {}
 
-  // Move constructor
-  FlatMap(FlatMap&& b) = default;
+void FlatMap::swap(FlatMap& b) {
+    data.swap(b.data);
+}
 
-  // Swap method
-  void swap(FlatMap& b) {
-    std::swap(data_, b.data_);
-  }
-
-  // Copy assignment operator
-  FlatMap& operator=(const FlatMap& b) {
+FlatMap& FlatMap::operator=(const FlatMap& b) {
     if (this != &b) {
-      data_ = b.data_;
+        data = b.data;
     }
     return *this;
-  }
+}
 
-  // Move assignment operator
-  FlatMap& operator=(FlatMap&& b) {
+FlatMap& FlatMap::operator=(FlatMap&& b) noexcept {
     if (this != &b) {
-      data_ = std::move(b.data_);
+        data = std::move(b.data);
     }
     return *this;
-  }
+}
 
-  // Clear the container
-  void clear() {
-    data_.clear();
-  }
+void FlatMap::clear() {
+    data.clear();
+}
 
-  // Erase an element by key
-  bool erase(const Key& k) {
-    auto it = std::lower_bound(data_.begin(), data_.end(), k, [](const auto& pair, const Key& key) {
-      return pair.first < key;
-    });
-    if (it != data_.end() && it->first == k) {
-      data_.erase(it);
-      return true;
+bool FlatMap::erase(const Key& k) {
+    size_t index = findIndex(k);
+    if (index < data.size()) {
+        data.erase(index);
+        return true;
     }
     return false;
-  }
+}
 
-  // Insert a new element
-  bool insert(const Key& k, const Value& v) {
-    auto it = std::lower_bound(data_.begin(), data_.end(), k, [](const auto& pair, const Key& key) {
-      return pair.first < key;
-    });
-    if (it != data_.end() && it->first == k) {
-      return false; // Key already exists
+bool FlatMap::insert(const Key& k, const Value& v) {
+    size_t index = findIndex(k);
+    if (index < data.size()) {
+        return false; // Key already exists
     }
-    data_.insert(it, {k, v});
+    data.push_back({k, v});
     return true;
-  }
+}
 
-  // Check if a key exists
-  bool contains(const Key& k) const {
-    return std::binary_search(data_.begin(), data_.end(), k, [](const auto& pair, const Key& key) {
-      return pair.first < key;
-    });
-  }
+bool FlatMap::contains(const Key& k) const {
+    return findIndex(k) < data.size();
+}
 
-  // Non-safe operator[] to get or insert a value
-  Value& operator[](const Key& k) {
-    auto it = std::lower_bound(data_.begin(), data_.end(), k, [](const auto& pair, const Key& key) {
-      return pair.first < key;
-    });
-    if (it != data_.end() && it->first == k) {
-      return it->second;
+Value& FlatMap::operator[](const Key& k) {
+    size_t index = findIndex(k);
+    if (index < data.size()) {
+        return data[index].value;
     }
-    data_.insert(it, {k, Value{}});
-    return data_.back().second;
-  }
+    // Insert default value if key does not exist
+    data.push_back({k, Value{}});
+    return data.back().value;
+}
 
-  // Safe at() method to get a value, throws if key does not exist
-  Value& at(const Key& k) {
-    auto it = std::lower_bound(data_.begin(), data_.end(), k, [](const auto& pair, const Key& key) {
-      return pair.first < key;
-    });
-    if (it != data_.end() && it->first == k) {
-      return it->second;
+Value& FlatMap::at(const Key& k) {
+    size_t index = findIndex(k);
+    if (index >= data.size()) {
+        throw std::runtime_error("Key not found");
     }
-    throw std::out_of_range("Key not found");
-  }
+    return data[index].value;
+}
 
-  const Value& at(const Key& k) const {
-    auto it = std::lower_bound(data_.begin(), data_.end(), k, [](const auto& pair, const Key& key) {
-      return pair.first < key;
-    });
-    if (it != data_.end() && it->first == k) {
-      return it->second;
+const Value& FlatMap::at(const Key& k) const {
+    size_t index = findIndex(k);
+    if (index >= data.size()) {
+        throw std::runtime_error("Key not found");
     }
-    throw std::out_of_range("Key not found");
-  }
+    return data[index].value;
+}
 
-  // Size of the container
-  size_t size() const {
-    return data_.size();
-  }
+size_t FlatMap::size() const {
+    return data.size();
+}
 
-  // Check if the container is empty
-  bool empty() const {
-    return data_.empty();
-  }
+bool FlatMap::empty() const {
+    return data.empty();
+}
 
-  friend bool operator==(const FlatMap& a, const FlatMap& b) {
-    return a.data_ == b.data_;
-  }
+bool operator==(const FlatMap& a, const FlatMap& b) {
+    return a.data == b.data;
+}
 
-  friend bool operator!=(const FlatMap& a, const FlatMap& b) {
+bool operator!=(const FlatMap& a, const FlatMap& b) {
     return !(a == b);
-  }
-
-private:
-  std::vector<std::pair<Key, Value>> data_;
-};
+}
