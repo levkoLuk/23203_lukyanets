@@ -4,165 +4,165 @@
 #include <iostream>
 #include <stdexcept>
 
+#define INITIAL_VEC_CAPACITY 4
+
 template <typename T>
 class Vector {
-private:
-    T* data;         // Pointer to the underlying array
-    size_t size;     // Current number of elements
-    size_t capacity; // Total allocated memory
-
 public:
-    // Default constructor
-    Vector() : size(0), capacity(2), data(new T[capacity]) {}
-
-    // Constructor with initial size
-    explicit Vector(size_t initialSize) : size(initialSize), capacity(initialSize * 2), data(new T[capacity]) {
-        for (size_t i = 0; i < size; ++i) {
-            data[i] = T();
+    Vector() : ptr(nullptr), currentAmount(0), allocatedAmount(0) {
+        ptr = new T[INITIAL_VEC_CAPACITY];
+        if (ptr == nullptr) {
+            throw std::runtime_error("Memory allocation failed");
+        }
+        allocatedAmount = INITIAL_VEC_CAPACITY;
+    }
+    Vector(const Vector& other) : ptr(nullptr), currentAmount(other.currentAmount), allocatedAmount(other.allocatedAmount) {
+        ptr = new T[allocatedAmount];
+        if (ptr == nullptr) {
+            throw std::runtime_error("Memory allocation failed");
+        }
+        for (size_t i = 0; i < currentAmount; ++i) {
+            ptr[i] = other.ptr[i];
         }
     }
 
-    // Copy constructor
-    Vector(const Vector& other) : size(other.size), capacity(other.capacity), data(new T[capacity]) {
-        for (size_t i = 0; i < size; ++i) {
-            data[i] = other.data[i];
-        }
-    }
-
-    // Move constructor
-    Vector(Vector&& other) noexcept : size(other.size), capacity(other.capacity), data(other.data) {
-        other.data = nullptr;
-        other.size = 0;
-        other.capacity = 0;
-    }
-
-    // Copy assignment operator
     Vector& operator=(const Vector& other) {
         if (this != &other) {
-            delete[] data;
-            size = other.size;
-            capacity = other.capacity;
-            data = new T[capacity];
-            for (size_t i = 0; i < size; ++i) {
-                data[i] = other.data[i];
+            delete[] ptr;
+            currentAmount = other.currentAmount;
+            allocatedAmount = other.allocatedAmount;
+            ptr = new T[allocatedAmount];
+            if (ptr == nullptr) {
+                throw std::runtime_error("Memory allocation failed");
+            }
+            for (size_t i = 0; i < currentAmount; ++i) {
+                ptr[i] = other.ptr[i];
             }
         }
         return *this;
     }
 
-    // Move assignment operator
+    Vector(Vector&& other) noexcept : ptr(other.ptr), currentAmount(other.currentAmount), allocatedAmount(other.allocatedAmount) {
+        other.ptr = nullptr;
+        other.currentAmount = 0;
+        other.allocatedAmount = 0;
+    }
+
     Vector& operator=(Vector&& other) noexcept {
         if (this != &other) {
-            delete[] data;
-            size = other.size;
-            capacity = other.capacity;
-            data = other.data;
-            other.data = nullptr;
-            other.size = 0;
-            other.capacity = 0;
+            delete[] ptr;
+            ptr = other.ptr;
+            currentAmount = other.currentAmount;
+            allocatedAmount = other.allocatedAmount;
+            other.ptr = nullptr;
+            other.currentAmount = 0;
+            other.allocatedAmount = 0;
         }
         return *this;
     }
 
-    // Destructor
     ~Vector() {
-        delete[] data;
+        delete[] ptr;
     }
 
-    // Reserve additional memory
-    void reserve(size_t newCapacity) {
-        if (newCapacity > capacity) {
-            T* newData = new T[newCapacity];
-            for (size_t i = 0; i < size; ++i) {
-                newData[i] = data[i];
-            }
-            delete[] data;
-            data = newData;
-            capacity = newCapacity;
-        }
-    }
-
-    // Resize the vector
-    void resize(size_t newSize, const T& value = T()) {
-        if (newSize > size) {
-            if (newSize > capacity) {
-                reserve(newSize * 2);
-            }
-            for (size_t i = size; i < newSize; ++i) {
-                data[i] = value;
-            }
-        } else if (newSize < size) {
-            size = newSize;
-        }
-        size = newSize;
-    }
-
-    // Push back an element
-    void push_back(const T& value) {
-        if (size == capacity) {
-            reserve(capacity * 2);
-        }
-        data[size++] = value;
-    }
-
-    // Pop back an element
-    void pop_back() {
-        if (!empty()) {
-            --size;
-        }
-    }
-
-    // Clear the vector
-    void clear() {
-        size = 0;
-    }
-
-    // Access an element (non-const version)
     T& operator[](size_t index) {
-        if (index >= size) {
-            throw std::runtime_error("Index out of range");
+        if (index >= currentAmount) {
+            throw std::out_of_range("Index out of range");
         }
-        return data[index];
+        return ptr[index];
     }
 
-    // Access an element (const version)
     const T& operator[](size_t index) const {
-        if (index >= size) {
-            throw std::runtime_error("Index out of range");
+        if (index >= currentAmount) {
+            throw std::out_of_range("Index out of range");
         }
-        return data[index];
+        return ptr[index];
     }
 
-    // Access an element safely
-    T& at(size_t index) {
-        if (index >= size) {
-            throw std::runtime_error("Index out of range");
+    void push_back(const T& elem) {
+        expandMemoryIfNeeded();
+        ptr[currentAmount] = elem;
+        ++currentAmount;
+    }
+
+    void expandMemoryIfNeeded() {
+        if (currentAmount == allocatedAmount) {
+            const size_t newAmount = allocatedAmount * 2;
+            T* tmpPtr = new T[newAmount];
+            if (tmpPtr == nullptr) {
+                throw std::runtime_error("Memory allocation failed");
+            }
+            for (size_t i = 0; i < currentAmount; ++i) {
+                tmpPtr[i] = ptr[i];
+            }
+            delete[] ptr;
+            ptr = tmpPtr;
+            allocatedAmount = newAmount;
         }
-        return data[index];
     }
 
-    // Access an element safely (const version)
-    const T& at(size_t index) const {
-        if (index >= size) {
-            throw std::runtime_error("Index out of range");
+    size_t size() const {
+        return currentAmount;
+    }
+
+    size_t capacity() const {
+        return allocatedAmount;
+    }
+
+    void debugPrint() const {
+        for (size_t i = 0; i < currentAmount; ++i) {
+            std::cout << ptr[i] << " ";
         }
-        return data[index];
+        std::cout << std::endl;
     }
 
-    // Get the current size
-    size_t getSize() const {
-        return size;
+    T back() const {
+        if (currentAmount == 0) {
+            throw std::out_of_range("Vector is empty");
+        }
+        return ptr[currentAmount - 1];
     }
 
-    // Check if the vector is empty
+    void clear() {
+        currentAmount = 0;
+    }
+
+    void erase(size_t index) {
+        if (index >= currentAmount) {
+            throw std::out_of_range("Index out of range");
+        }
+        for (size_t i = index; i < currentAmount - 1; ++i) {
+            ptr[i] = ptr[i + 1];
+        }
+        --currentAmount;
+    }
+
     bool empty() const {
-        return size == 0;
+        return currentAmount == 0;
     }
 
-    // Get the current capacity
-    size_t getCapacity() const {
-        return capacity;
+    void swap(Vector& other) {
+        std::swap(ptr, other.ptr);
+        std::swap(currentAmount, other.currentAmount);
+        std::swap(allocatedAmount, other.allocatedAmount);
     }
+
+    friend bool operator==(const Vector& a, const Vector& b) {
+        if (a.currentAmount != b.currentAmount) return false;
+        for (size_t i = 0; i < a.currentAmount; ++i) {
+            if (a.ptr[i] != b.ptr[i]) return false;
+        }
+        return true;
+    }
+
+    friend bool operator!=(const Vector& a, const Vector& b) {
+        return !(a == b);
+    }
+
+private:
+    T* ptr;
+    size_t currentAmount;
+    size_t allocatedAmount;
 };
 
 #endif // VECTOR_H
