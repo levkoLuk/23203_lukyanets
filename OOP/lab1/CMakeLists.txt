@@ -6,9 +6,8 @@ set(SOURCES
   flat_map_test.cpp
 )
 set(HEADERS
-  flatmap.h
-  Vector.h
-)
+  include/flatmap.h
+  include/Vector.h)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
