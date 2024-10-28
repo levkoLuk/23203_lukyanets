@@ -1,61 +1,138 @@
-#include <gtest/gtest.h>
 #include "flatmap.h"
+#include <gtest/gtest.h>
 
-TEST(FlatMapTest, BasicOperations) {
-    FlatMap map;
-    EXPECT_TRUE(map.empty());
-    EXPECT_EQ(map.size(), 0);
-
-    map.insert("John", {25, 70});
-    EXPECT_FALSE(map.empty());
-    EXPECT_EQ(map.size(), 1);
-    EXPECT_TRUE(map.contains("John"));
-    EXPECT_FALSE(map.contains("Jane"));
-
-    auto& value = map["John"];
-    EXPECT_EQ(value.age, 25);
-    EXPECT_EQ(value.weight, 70);
-
-    map.erase("John");
-    EXPECT_TRUE(map.empty());
-    EXPECT_EQ(map.size(), 0);
+Value createValue(unsigned age, unsigned weight) {
+    Value val;
+    val.age = age;
+    val.weight = weight;
+    return val;
 }
 
-TEST(FlatMapTest, AtAndOperator) {
+TEST(FlatMapTest, DefaultConstructor) {
     FlatMap map;
-    map.insert("John", {25, 70});
-
-    auto& value = map.at("John");
-    EXPECT_EQ(value.age, 25);
-    EXPECT_EQ(value.weight, 70);
-
-    EXPECT_THROW(map.at("Jane"), std::out_of_range);
-
-    auto& defaultValue = map["Jane"];
-    EXPECT_EQ(defaultValue.age, 0);
-    EXPECT_EQ(defaultValue.weight, 0);
+    EXPECT_EQ(map.size(), 0);
+    EXPECT_TRUE(map.empty());
 }
 
-TEST(FlatMapTest, SwapAndAssignment) {
-    FlatMap map1;
-    map1.insert("John", {25, 70});
+TEST(FlatMapTest, CopyConstructor) {
+    FlatMap map;
+    map.insert("key1", createValue(25, 70));
 
-    FlatMap map2;
-    map2.insert("Jane", {30, 60});
+    FlatMap mapCopy(map);
+    EXPECT_EQ(mapCopy.size(), 1);
+    EXPECT_TRUE(mapCopy.contains("key1"));
+    EXPECT_EQ(mapCopy.at("key1").age, 25);
+}
+
+TEST(FlatMapTest, MoveConstructor) {
+    FlatMap map;
+    map.insert("key1", createValue(25, 70));
+
+    FlatMap mapMove(std::move(map));
+    EXPECT_EQ(mapMove.size(), 1);
+    EXPECT_TRUE(mapMove.contains("key1"));
+    EXPECT_EQ(mapMove.at("key1").age, 25);
+}
+
+TEST(FlatMapTest, CopyAssignment) {
+    FlatMap map;
+    map.insert("key1", createValue(25, 70));
+
+    FlatMap mapAssign;
+    mapAssign = map;
+    EXPECT_EQ(mapAssign.size(), 1);
+    EXPECT_TRUE(mapAssign.contains("key1"));
+    EXPECT_EQ(mapAssign.at("key1").age, 25);
+}
+
+TEST(FlatMapTest, MoveAssignment) {
+    FlatMap map;
+    map.insert("key1", createValue(25, 70));
+
+    FlatMap mapAssign;
+    mapAssign = std::move(map);
+    EXPECT_EQ(mapAssign.size(), 1);
+    EXPECT_TRUE(mapAssign.contains("key1"));
+    EXPECT_EQ(mapAssign.at("key1").age, 25);
+}
+
+TEST(FlatMapTest, Swap) {
+    FlatMap map1, map2;
+    map1.insert("key1", createValue(25, 70));
+    map2.insert("key2", createValue(30, 80));
 
     map1.swap(map2);
-    EXPECT_TRUE(map1.contains("Jane"));
-    EXPECT_TRUE(map2.contains("John"));
-
-    FlatMap map3 = map1;
-    EXPECT_TRUE(map3.contains("Jane"));
-
-    FlatMap map4;
-    map4 = std::move(map2);
-    EXPECT_TRUE(map4.contains("John"));
+    EXPECT_TRUE(map1.contains("key2"));
+    EXPECT_TRUE(map2.contains("key1"));
 }
 
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+TEST(FlatMapTest, Clear) {
+    FlatMap map;
+    map.insert("key1", createValue(25, 70));
+    map.clear();
+    EXPECT_EQ(map.size(), 0);
+    EXPECT_TRUE(map.empty());
+}
+
+TEST(FlatMapTest, Erase) {
+    FlatMap map;
+    map.insert("key1", createValue(25, 70));
+    EXPECT_TRUE(map.erase("key1"));
+    EXPECT_FALSE(map.contains("key1"));
+    EXPECT_FALSE(map.erase("nonexistent_key")); // Erasing non-existing key
+}
+
+TEST(FlatMapTest, InsertAndContains) {
+    FlatMap map;
+    EXPECT_TRUE(map.insert("key1", createValue(25, 70)));
+    EXPECT_FALSE(map.insert("key1", createValue(30, 80))); // Duplicate insert should fail
+    EXPECT_TRUE(map.contains("key1"));
+}
+
+TEST(FlatMapTest, SubscriptOperator) {
+    FlatMap map;
+    map["key1"] = createValue(25, 70);
+    EXPECT_EQ(map["key1"].age, 25);
+
+    map["key1"].age = 30; // Modify existing key
+    EXPECT_EQ(map["key1"].age, 30);
+}
+
+TEST(FlatMapTest, AtMethod) {
+    FlatMap map;
+    map.insert("key1", createValue(25, 70));
+
+    EXPECT_EQ(map.at("key1").age, 25);
+
+    EXPECT_THROW(map.at("nonexistent_key"), std::runtime_error);
+}
+
+TEST(FlatMapTest, ConstAtMethod) {
+    const FlatMap map = [] {
+        FlatMap tmp;
+        tmp.insert("key1", createValue(25, 70));
+        return tmp;
+    }();
+
+    EXPECT_EQ(map.at("key1").age, 25);
+}
+
+TEST(FlatMapTest, SizeAndEmpty) {
+    FlatMap map;
+    EXPECT_TRUE(map.empty());
+
+    map.insert("key1", createValue(25, 70));
+    EXPECT_EQ(map.size(), 1);
+    EXPECT_FALSE(map.empty());
+}
+
+TEST(FlatMapTest, EqualityOperators) {
+    FlatMap map1, map2;
+    map1.insert("key1", createValue(25, 70));
+    map2.insert("key1", createValue(25, 70));
+
+    EXPECT_TRUE(map1 == map2);
+    map2["key1"].age = 30;
+    EXPECT_FALSE(map1 == map2);
+    EXPECT_TRUE(map1 != map2);
 }
