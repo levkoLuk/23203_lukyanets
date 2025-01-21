@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 #include <QTimer>
@@ -22,6 +21,7 @@ private slots:
     void onStartButtonClicked();
     void onStopButtonClicked();
     void onResetButtonClicked();
+    void onZombieModeButtonClicked();
     void updateGame();
     void onCellClicked(int x, int y);
 
@@ -30,7 +30,7 @@ private:
     CustomScene *scene;
     GameOfLife *game;
     QTimer *timer;
+    bool zombieMode;
     void drawGrid();
+    void updateZombieCount();
 };
-
-#endif // MAINWINDOW_H
