@@ -1,22 +1,18 @@
-#ifndef CELL_H
-#define CELL_H
+#pragma once
 
 #include <QGraphicsRectItem>
 #include <QBrush>
+#include "gameoflife.h"
 
 class Cell : public QGraphicsRectItem
 {
 public:
-    Cell(int x, int y, bool alive, QGraphicsItem *parent = nullptr);
-    void setAlive(bool alive);
+    Cell(int x, int y, GameOfLife::CellState state, QGraphicsItem *parent = nullptr);
+    void setState(GameOfLife::CellState state);
 
 private:
-    bool isAlive;
+    GameOfLife::CellState state;
     QBrush aliveBrush;
     QBrush deadBrush;
+    QBrush zombieBrush;
 };
-
-#endif // CELL_H
-
-
-////////
