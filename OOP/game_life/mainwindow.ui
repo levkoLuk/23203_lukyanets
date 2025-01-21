@@ -48,7 +48,21 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QPushButton" name="zombieModeButton">
+        <property name="text">
+         <string>Zombie Mode: Off</string>
+        </property>
+       </widget>
+      </item>
      </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="zombieCountLabel">
+      <property name="text">
+       <string>Zombie Cells: 0</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
