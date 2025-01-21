@@ -1,5 +1,4 @@
-#ifndef CUSTOMSCENE_H
-#define CUSTOMSCENE_H
+#pragma once
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
@@ -16,6 +15,9 @@ signals:
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
-};
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 
-#endif // CUSTOMSCENE_H
+private:
+    int lastX;
+    int lastY;
+};
