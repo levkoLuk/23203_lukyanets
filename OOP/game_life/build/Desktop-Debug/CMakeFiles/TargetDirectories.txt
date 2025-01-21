@@ -1,0 +1,9 @@
+/home/levluk/Рабочий стол/game_life/build/Desktop-Debug/CMakeFiles/game_life.dir
+/home/levluk/Рабочий стол/game_life/build/Desktop-Debug/CMakeFiles/edit_cache.dir
+/home/levluk/Рабочий стол/game_life/build/Desktop-Debug/CMakeFiles/rebuild_cache.dir
+/home/levluk/Рабочий стол/game_life/build/Desktop-Debug/CMakeFiles/list_install_components.dir
+/home/levluk/Рабочий стол/game_life/build/Desktop-Debug/CMakeFiles/install.dir
+/home/levluk/Рабочий стол/game_life/build/Desktop-Debug/CMakeFiles/install/local.dir
+/home/levluk/Рабочий стол/game_life/build/Desktop-Debug/CMakeFiles/install/strip.dir
+/home/levluk/Рабочий стол/game_life/build/Desktop-Debug/CMakeFiles/game_life_autogen_timestamp_deps.dir
+/home/levluk/Рабочий стол/game_life/build/Desktop-Debug/CMakeFiles/game_life_autogen.dir
