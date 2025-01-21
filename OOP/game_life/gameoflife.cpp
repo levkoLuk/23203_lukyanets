@@ -1,35 +1,43 @@
 #include "gameoflife.h"
 
 GameOfLife::GameOfLife(int width, int height)
-    : width(width), height(height), grid(height, std::vector<bool>(width, false))
+    : width(width), height(height), grid(height, std::vector<CellState>(width, Dead)), zombieMode(false)
 {
 }
 
-bool GameOfLife::getCellState(int x, int y) const
+GameOfLife::CellState GameOfLife::getCellState(int x, int y) const
 {
     return grid[y][x];
 }
 
-void GameOfLife::toggleCellState(int x, int y) {
-
-    grid[y][x] = !grid[y][x];
+void GameOfLife::toggleCellState(int x, int y)
+{
+    if (grid[y][x] == Alive) {
+        grid[y][x] = Dead;
+    } else {
+        grid[y][x] = Alive;
+    }
 }
 
-void GameOfLife::update() {
-
-    std::vector<std::vector<bool>> newGrid = grid;
+void GameOfLife::update()
+{
+    std::vector<std::vector<CellState>> newGrid = grid;
 
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             int liveNeighbors = countLiveNeighbors(x, y);
 
-            if (grid[y][x]) {
+            if (grid[y][x] == Alive) {
                 if (liveNeighbors < 2 || liveNeighbors > 3) {
-                    newGrid[y][x] = false;
+                    newGrid[y][x] = zombieMode ? Zombie : Dead;
+                }
+            } else if (grid[y][x] == Zombie) {
+                if (liveNeighbors == 2) {
+                    newGrid[y][x] = Alive;
                 }
             } else {
                 if (liveNeighbors == 3) {
-                    newGrid[y][x] = true;
+                    newGrid[y][x] = Alive;
                 }
             }
         }
@@ -38,23 +46,41 @@ void GameOfLife::update() {
     grid = newGrid;
 }
 
-void GameOfLife::reset(){
-
-    grid = std::vector<std::vector<bool>>(height, std::vector<bool>(width, false));
+void GameOfLife::reset()
+{
+    grid = std::vector<std::vector<CellState>>(height, std::vector<CellState>(width, Dead));
 }
 
-int GameOfLife::countLiveNeighbors(int x, int y) const {
+void GameOfLife::setZombieMode(bool enabled)
+{
+    zombieMode = enabled;
+}
 
+int GameOfLife::getZombieCount() const
+{
+    int count = 0;
+    for (const auto& row : grid) {
+        for (const auto& cell : row) {
+            if (cell == Zombie) {
+                ++count;
+            }
+        }
+    }
+    return count;
+}
+
+int GameOfLife::countLiveNeighbors(int x, int y) const
+{
     int count = 0;
 
     for (int i = -1; i <= 1; ++i) {
         for (int j = -1; j <= 1; ++j) {
             if (i == 0 && j == 0) continue;
 
-            int nx = x + i;
-            int ny = y + j;
+            int nx = ((x + i)+ height)% height;
+            int ny = ((y + j) + width)% width;
 
-            if (nx >= 0 && nx < width && ny >= 0 && ny < height && grid[ny][nx]) {
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height && grid[ny][nx] == Alive) {
                 ++count;
             }
         }
