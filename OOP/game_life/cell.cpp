@@ -1,18 +1,22 @@
-#pragma once
+#include "cell.h"
 
-#include <QGraphicsRectItem>
-#include <QBrush>
-#include "gameoflife.h"
-
-class Cell : public QGraphicsRectItem
+Cell::Cell(int x, int y, GameOfLife::CellState state, QGraphicsItem *parent)
+    : QGraphicsRectItem(x * 10, y * 10, 10, 10, parent), state(state)
 {
-public:
-    Cell(int x, int y, GameOfLife::CellState state, QGraphicsItem *parent = nullptr);
-    void setState(GameOfLife::CellState state);
+    aliveBrush = QBrush(Qt::black);
+    deadBrush = QBrush(Qt::white);
+    zombieBrush = QBrush(Qt::red);
+    setState(state);
+}
 
-private:
-    GameOfLife::CellState state;
-    QBrush aliveBrush;
-    QBrush deadBrush;
-    QBrush zombieBrush;
-};
+void Cell::setState(GameOfLife::CellState state)
+{
+    this->state = state;
+    if (state == GameOfLife::Alive) {
+        setBrush(aliveBrush);
+    } else if (state == GameOfLife::Zombie) {
+        setBrush(zombieBrush);
+    } else {
+        setBrush(deadBrush);
+    }
+}
