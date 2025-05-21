@@ -1,0 +1,14 @@
+data_paths:
+  raw:
+    news: "data/raw/zulu_news_scraped.csv"
+    manual: "data/raw/manual_entries.csv"
+  processed:
+    cleaned: "data/processed/cleaned_dataset.csv"
+    train: "data/processed/train_dataset.csv"
+    test: "data/processed/test_dataset.csv"
+  final: "data/final_zulu_dataset.csv"
+
+label_mapping:
+  positive: 0
+  negative: 1
+  neutral: 2

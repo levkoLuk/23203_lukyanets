@@ -1,0 +1,11 @@
+model:
+  name: "bert-base-multilingual-cased"
+  params:
+    num_labels: 3
+    max_length: 128
+
+training:
+  batch_size: 16
+  epochs: 3
+  learning_rate: 2e-5
+  output_dir: "models/trained_model"
