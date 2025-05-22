@@ -25,12 +25,9 @@ class ZuluDataset(Dataset):
 def train():
     with open("configs/model_config.yaml") as f:
         config = yaml.safe_load(f)
-    
-    # Загрузка данных
     dataset = load_dataset('csv', data_files='data/processed/train_dataset.csv')
     tokenizer = BertTokenizer.from_pretrained(config['model']['name'])
     
-    # Токенизация
     encodings = tokenizer(
         dataset['train']['text'],
         truncation=True,
@@ -38,16 +35,13 @@ def train():
         max_length=config['model']['params']['max_length']
     )
     
-    # Создание датасета
     train_dataset = ZuluDataset(encodings, dataset['train']['label'])
     
-    # Модель
     model = BertForSequenceClassification.from_pretrained(
         config['model']['name'],
         num_labels=config['model']['params']['num_labels']
     )
     
-    # Обучение
     training_args = TrainingArguments(
         output_dir=config['training']['output_dir'],
         num_train_epochs=config['training']['epochs'],
